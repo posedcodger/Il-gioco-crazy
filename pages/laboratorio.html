@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Laboratorio</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url('../img/laboratorio.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      text-align: center;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      text-shadow: 2px 2px 6px black;
+      margin-bottom: 30px;
+    }
+
+    .btn-container, .note-container, .message-container {
+      margin-top: 10px;
+    }
+
+    button {
+      margin: 10px;
+      padding: 15px 25px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background-color: rgba(255, 255, 255, 0.8);
+      color: black;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: rgba(200, 200, 200, 0.9);
+    }
+
+    .note-container, .message-container {
+      display: none;
+      animation: fadeIn 1s forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .note-text {
+      font-size: 1.2rem;
+      margin: 20px auto;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      max-width: 80%;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>Un laboratorio</h1>
+
+    <div class="btn-container" id="main-options">
+      <button onclick="showNote()">Esplora</button>
+      <button onclick="window.location.href='portachiusa.html'">Prossima stanza</button>
+    </div>
+
+    <div class="note-container" id="note">
+      <div class="note-text">Dopo aver esplorato la stanza a fondo trovi un bigliettino.</div>
+      <button onclick="readNote()">Leggi</button>
+      <button onclick="backToMain()">Lascia lì, palesemente inutile</button>
+    </div>
+
+    <div class="message-container" id="message">
+      <div class="note-text">L'unico a conoscere la password è un robot.</div>
+      <button onclick="backToMain()">Torna indietro</button>
+    </div>
+  </div>
+
+  <script>
+    const mainOptions = document.getElementById('main-options');
+    const note = document.getElementById('note');
+    const message = document.getElementById('message');
+
+    function showNote() {
+      mainOptions.style.display = 'none';
+      note.style.display = 'block';
+    }
+
+    function readNote() {
+      note.style.display = 'none';
+      message.style.display = 'block';
+    }
+
+    function backToMain() {
+      message.style.display = 'none';
+      note.style.display = 'none';
+      mainOptions.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

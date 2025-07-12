@@ -1,0 +1,128 @@
+:root {
+  --main-color: rgba(255, 255, 255, 0.95);
+  --accent-color: #ffcc00;
+  --footer-bg: #111;
+  --footer-text: #ccc;
+  --door-hover-glow: rgba(255, 255, 200, 0.6);
+  --transition-time: 0.5s;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--main-color);
+  background: #000;
+  overflow-x: hidden;
+}
+
+.background {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: url('img/sfondohome.png') center center / cover no-repeat;
+  opacity: 0.4;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  padding-bottom: 100px;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  margin-bottom: 0.5rem;
+}
+
+h2 {
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  margin-bottom: 2rem;
+  font-weight: 400;
+}
+
+.doors {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.door {
+  cursor: pointer;
+  transition: transform var(--transition-time), box-shadow var(--transition-time);
+  position: relative;
+}
+
+.door img {
+  width: clamp(160px, 20vw, 200px); 
+  height: auto;
+}
+
+.door:hover {
+  transform: translateY(-10px);
+}
+
+.door:hover::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: var(--door-hover-glow);
+  filter: blur(10px);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+footer {
+  background-color: var(--footer-bg);
+  color: var(--footer-text);
+  text-align: center;
+  padding: 0.8rem 1rem;
+  font-size: 0.9rem;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+}
+
+footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-time) ease-in-out;
+  z-index: 1000;
+}
+
+@media (max-width: 600px) {
+  .door img {
+    max-width: 80px;
+  }
+}

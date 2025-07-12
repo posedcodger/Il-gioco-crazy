@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verso il Castello</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: url('../img/castello.png') no-repeat center center fixed;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    #intro-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2rem;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px 30px;
+      border-radius: 10px;
+      text-align: center;
+      z-index: 10;
+      opacity: 1;
+      transition: opacity 1.5s ease-out;
+    }
+
+    .cavallo-container {
+      position: absolute;
+      bottom: 0;
+      left: -200px;
+      width: 200px;
+      height: 150px;
+      background: url('../img/horse.png') no-repeat;
+      background-size: 1200px 150px;
+      display: none;
+      animation: run-sprite 1s steps(6) infinite, move-cavallo 10s linear forwards;
+    }
+
+    @keyframes run-sprite {
+      from { background-position: 0 0; }
+      to { background-position: -1200px 0; }
+    }
+
+    @keyframes move-cavallo {
+      to { left: 100vw; }
+    }
+
+    #next-btn {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      padding: 12px 24px;
+      font-size: 1.2rem;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+    }
+
+    #next-btn:hover {
+      background: rgba(0, 0, 0, 0.9);
+    }
+  </style>
+</head>
+<body>
+
+  <audio autoplay loop>
+    <source src="../img/medievalmusic.mp3" type="audio/mpeg">
+    Il tuo browser non supporta l'audio HTML5.
+  </audio>
+
+  <div id="intro-text">
+    In lontananza si vede un castello...<br>lì a sinistra c'è un cavallo, perfetto.
+  </div>
+
+  <div class="cavallo-container" id="cavallo"></div>
+
+  <button id="next-btn" onclick="location.href='castello.html'">Avanti</button>
+
+  <script>
+    const introText = document.getElementById('intro-text');
+    const cavallo = document.getElementById('cavallo');
+    const nextBtn = document.getElementById('next-btn');
+
+    setTimeout(() => {
+      introText.style.opacity = 0;
+      setTimeout(() => {
+        introText.style.display = 'none';
+        cavallo.style.display = 'block';
+      }, 1500);
+    }, 4000);
+
+    cavallo.addEventListener('animationend', (e) => {
+      if (e.animationName === 'move-cavallo') {
+        nextBtn.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

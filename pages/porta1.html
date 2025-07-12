@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>un cane.</title>
+<link rel="stylesheet" href="../style.css" />
+<style>
+  .background {
+    background: url('../img/sfondocane.png') center center / cover no-repeat;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  .container {
+    max-width: 600px;
+    margin: 5rem auto 2rem;
+    text-align: center;
+    color: var(--main-color);
+  }
+  h1, h2 {
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  h1.visible, h2.visible {
+    opacity: 1;
+  }
+  .dog-image, .map-image {
+      width: 40vw;      
+  max-width: 240px; 
+  height: auto;
+  margin: 2rem auto;
+  cursor: pointer;
+  transition: opacity 0.5s ease;
+  }
+  .map-image {
+  width: 50vw;      
+  max-width: 300px;
+  }
+  .map-image {
+    display: none;
+  }
+  .stick {
+      position: fixed;
+  bottom: 90px; 
+  right: 120px;  
+  width: 6vw;
+  height: auto;
+  cursor: grab;
+  user-select: none;
+  z-index: 10;
+  transition: transform 0.2s ease;
+
+  }
+  .stick:active {
+    cursor: grabbing;
+  }
+  @media (max-width: 480px) {
+  .dog-image, .map-image {
+    width: 70vw;    
+  }
+  .stick {
+    width: 20vw;
+    bottom: 50px;
+    right: 20px;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="background"></div>
+
+  <div class="container">
+    <h1 id="line1">Hai trovato un cane.</h1>
+    <h2 id="line2">Cosa cazzo vuole sto cane?</h2>
+    <h2 id="line3" style="opacity:0; transition: opacity 0.6s ease; margin-top:1rem; color: var(--main-color);">
+    Sembra abbia cagato una mappa.
+  </h2>
+
+    <img src="../img/cane.png" alt="Cane" id="dog" class="dog-image" />
+
+    <img src="../img/bone.png" alt="Bastone" id="stick" class="stick" draggable="true" />
+    
+    <img src="../img/map.png" alt="Mappa" id="map" class="map-image" />
+  </div>
+
+  <footer>
+    © 2025 Riccardo Dorigo — <a href="https://instagram.com/riccardo_dorigo" target="_blank" rel="noopener noreferrer">Instagram</a>
+  </footer>
+
+  <div id="overlay"></div>
+
+  <script>
+  const line1 = document.getElementById('line1');
+  const line2 = document.getElementById('line2');
+  const line3 = document.getElementById('line3'); 
+
+  setTimeout(() => line1.classList.add('visible'), 500);
+  setTimeout(() => line2.classList.add('visible'), 1600);
+
+  const stick = document.getElementById('stick');
+  const dog = document.getElementById('dog');
+  const map = document.getElementById('map');
+  const overlay = document.getElementById('overlay');
+
+  stick.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('text/plain', 'stick');
+  });
+
+  dog.addEventListener('dragover', e => {
+    e.preventDefault(); 
+  });
+
+  dog.addEventListener('drop', e => {
+    e.preventDefault();
+    dog.style.opacity = '0';
+    stick.style.opacity = '0';
+    line1.style.opacity = '0';
+    line2.style.opacity = '0';
+
+    setTimeout(() => {
+      dog.style.display = 'none';
+      stick.style.display = 'none';
+
+      line1.style.display = 'none';
+      line2.style.display = 'none';
+
+      map.style.display = 'block';
+
+      line3.style.opacity = '1';  
+
+      setTimeout(() => {
+        map.style.opacity = '1';
+      }, 50);
+    }, 500);
+  });
+
+  map.addEventListener('click', () => {
+    overlay.style.pointerEvents = 'auto';
+    overlay.style.opacity = '1';
+    setTimeout(() => {
+      window.location.href = 'mappa.html';
+    }, 500);
+  });
+</script>
+
+</body>
+</html>

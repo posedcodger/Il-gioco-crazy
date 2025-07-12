@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Un'avventura o una pazzia?</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <script>
+  function portaNonDisponibile() {
+    alert("Eh no! Questa la devo ancora fare, non avevo voglia.");
+  }
+</script>
+
+  <div class="background"></div>
+
+  <div class="container">
+    <h1>Un'avventura o una pazzia?</h1>
+    <h2>Scegli il tuo percorso</h2>
+
+    <div class="doors">
+      <div class="door" onclick="apriPorta('pages/porta1.html')">
+        <img src="img/porta1.png" alt="Porta 1" />
+      </div>
+      <div class="door" onclick="portaNonDisponibile()">
+        <img src="img/porta1.png" alt="Porta 2" />
+      </div>
+      <div class="door" onclick="apriPorta('pages/porta3.html')">
+        <img src="img/porta2.png" alt="Porta 3" />
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 Riccardo Dorigo — <a href="https://instagram.com/riccardo_dorigo" target="_blank" rel="noopener noreferrer">Instagram</a>
+  </footer>
+
+  <div id="overlay"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

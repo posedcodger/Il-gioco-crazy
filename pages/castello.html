@@ -1,0 +1,504 @@
+<!DOCTYPE html> 
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bossfight</title>
+<style>
+  body {
+    margin: 0;
+    background: black;
+    color: white;
+    font-family: 'Georgia', serif;
+    overflow: hidden;
+  }
+  #cutscene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to top, #000000, #1a1a1a);
+    animation: fadeIn 2s ease-out;
+    z-index: 10;
+  }
+  #boss-title {
+    font-size: 2rem;
+    opacity: 0;
+    animation: titleIn 3s forwards;
+  }
+  #boss-name {
+    font-size: 3rem;
+    font-weight: bold;
+    opacity: 0;
+    margin-top: 1rem;
+    animation: nameIn 5s forwards;
+  }
+  @keyframes titleIn { to { opacity: 1; } }
+  @keyframes nameIn {
+    0% { opacity: 0; letter-spacing: 1rem; filter: blur(8px); }
+    100% { opacity: 1; letter-spacing: 0; filter: blur(0); }
+  }
+  @keyframes fadeOut { to { opacity: 0; } }
+
+  #fight-container {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: #111;
+    color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  #boss-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  #boss-img {
+    width: 120px;
+    height: 120px;
+    background: url('../img/king.png') center/contain no-repeat;
+    flex-shrink: 0;
+    border: 2px solid white;
+    border-radius: 8px;
+  }
+  #boss-dialogue {
+    background: rgba(0,0,0,0.7);
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 1.3rem;
+    min-height: 80px;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  #fight-area {
+    position: relative;
+    margin: 0 auto;
+    width: 450px;
+    height: 280px; 
+    border: 4px solid white;
+    background: black;
+    overflow: hidden;
+  }
+
+  #heart {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: red;
+    left: 215px;
+    top: 130px; 
+    clip-path: polygon(50% 0%, 100% 35%, 80% 100%, 50% 75%, 20% 100%, 0% 35%);
+    transition: top 0.05s linear, left 0.05s linear;
+    z-index: 10;
+  }
+
+  .attack-object {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: yellow;
+    border-radius: 50%;
+    top: -20px;
+  }
+
+  #player-lives {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    background: rgba(0,0,0,0.7);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+  }
+
+  #attack-btn, #retry-btn, #next-btn {
+    display: block;
+    margin: 20px auto 0 auto;
+    padding: 12px 25px;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    border: none;
+    background: #c33;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  #attack-btn:disabled, #retry-btn:disabled, #next-btn:disabled {
+    background: #660000;
+    cursor: not-allowed;
+  }
+  #retry-btn, #next-btn {
+    display: none;
+  }
+
+  #analog-container {
+    display: none;
+    position: fixed;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 120px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    touch-action: none;
+    z-index: 50;
+  }
+  #stick {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 50%;
+    left: 30px;
+    top: 30px;
+    touch-action: none;
+  }
+
+  @media (max-width: 700px) {
+    #analog-container {
+      display: block;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="cutscene">
+  <div id="boss-title">✦ Sei arrivato al castello... ✦</div>
+  <div id="boss-name">IL RE DEL CASTELLO DI MERDA</div>
+</div>
+
+<div id="fight-container">
+  <div id="boss-area">
+    <div id="boss-img"></div>
+    <div id="boss-dialogue"></div>
+  </div>
+
+  <div id="fight-area">
+    <div id="heart"></div>
+  </div>
+
+  <button id="attack-btn" disabled>Attacca</button>
+  <button id="retry-btn">Riprova</button>
+  <button id="next-btn">Avanti</button>
+
+  <div id="player-lives">Vite: 5</div>
+
+  <div id="analog-container">
+    <div id="stick"></div>
+  </div>
+</div>
+
+<audio id="boss-audio" src="../img/bossfight.mp3" preload="auto" loop></audio>
+
+<script>
+  const cutscene = document.getElementById('cutscene');
+  const fightContainer = document.getElementById('fight-container');
+  const bossDialogue = document.getElementById('boss-dialogue');
+  const attackBtn = document.getElementById('attack-btn');
+  const retryBtn = document.getElementById('retry-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const heart = document.getElementById('heart');
+  const playerLivesDisplay = document.getElementById('player-lives');
+  const fightArea = document.getElementById('fight-area');
+  const bossAudio = document.getElementById('boss-audio');
+  const analogContainer = document.getElementById('analog-container');
+  const stick = document.getElementById('stick');
+
+  const bossLines = [
+    "Benvenuto nel mio castello....",
+    "....beh non tanto benvenuto.....",
+    "...ora ti massacro."
+  ];
+
+  let dialogueIndex = 0;
+
+  let bossHits = 0;
+  let playerLives = 5;
+  let bossAttacking = false;
+  let playerTurn = false;
+
+  let heartPos = { x: 215, y: 130 }; 
+  const speed = 3; 
+
+  let attackObjects = [];
+  const attackSpeed = 13;
+  const maxAttacksPerWave = 7;
+
+  const wavesCount = 3; 
+  const waveInterval = 1200; 
+
+  let stickCenter = {x: 60, y: 60};
+  let stickPos = {x: 60, y: 60};
+  let dragging = false;
+
+  const keys = {};
+  window.addEventListener('keydown', e => keys[e.key] = true);
+  window.addEventListener('keyup', e => keys[e.key] = false);
+
+  document.addEventListener('click', initAudio, { once: true });
+document.addEventListener('touchstart', initAudio, { once: true });
+
+function initAudio() {
+  bossAudio.play().catch(err => {
+    console.warn('Errore audio:', err);
+  });
+}
+
+  window.onload = () => {
+
+    setTimeout(() => {
+      cutscene.style.animation = 'fadeOut 2s forwards';
+      setTimeout(() => {
+        cutscene.style.display = 'none';
+        fightContainer.style.display = 'block';
+        startBossDialogue();
+      }, 2000);
+    }, 7000);
+  };
+
+  function startBossDialogue() {
+    if (dialogueIndex >= bossLines.length) {
+      startFight();
+      return;
+    }
+    bossDialogue.textContent = bossLines[dialogueIndex];
+    dialogueIndex++;
+    setTimeout(() => {
+      bossDialogue.textContent = "";
+      setTimeout(startBossDialogue, 1000);
+    }, 3500);
+  }
+
+  function startFight() {
+    playerTurn = false;
+    bossAttacking = true;
+    attackBtn.disabled = true;
+    bossDialogue.textContent = "Il Re ti attacca! Schiva!";
+    startBossAttack();
+  }
+
+  function startBossAttack() {
+    attackObjects = [];
+    bossDialogue.textContent = "Il Re ti attacca! Schiva!";
+    let currentWave = 0;
+
+    function spawnWave() {
+      if (currentWave >= wavesCount) {
+        attackObjects.forEach(obj => obj.remove());
+        attackObjects = [];
+        if (playerLives <= 0) {
+          gameOver();
+          return;
+        }
+        playerTurn = true;
+        bossAttacking = false;
+        attackBtn.disabled = false;
+        bossDialogue.textContent = "Ora tocca a te! ATTACCA!";
+        return;
+      }
+
+      const waveObjects = [];
+      for (let i=0; i<maxAttacksPerWave; i++) {
+        const obj = document.createElement('div');
+        obj.classList.add('attack-object');
+        obj.style.left = (Math.random() * (fightArea.clientWidth - 20)) + "px";
+        obj.style.top = "-20px";
+        fightArea.appendChild(obj);
+        waveObjects.push(obj);
+        attackObjects.push(obj);
+      }
+
+      let frame = 0;
+      const maxFrames = 60;
+      const interval = setInterval(() => {
+        waveObjects.forEach(obj => {
+          let top = parseFloat(obj.style.top);
+          obj.style.top = (top + attackSpeed) + "px";
+
+          const heartRect = heart.getBoundingClientRect();
+          const objRect = obj.getBoundingClientRect();
+
+          if (
+            objRect.left < heartRect.right &&
+            objRect.right > heartRect.left &&
+            objRect.top < heartRect.bottom &&
+            objRect.bottom > heartRect.top
+          ) {
+            playerLives--;
+            updateLives();
+            obj.style.top = fightArea.clientHeight + "px"; 
+          }
+        });
+
+        frame++;
+        if (frame > maxFrames) {
+          clearInterval(interval);
+          waveObjects.forEach(obj => {
+            obj.remove();
+            const index = attackObjects.indexOf(obj);
+            if (index !== -1) attackObjects.splice(index,1);
+          });
+          currentWave++;
+          setTimeout(spawnWave, waveInterval);
+        }
+      }, 33);
+    }
+
+    spawnWave();
+  }
+
+  function updateLives() {
+    playerLivesDisplay.textContent = "La tua utilissima vita: " + playerLives;
+  }
+
+  function gameOver() {
+    bossDialogue.textContent = "Sei morto... Riprova!";
+    attackBtn.disabled = true;
+    retryBtn.style.display = "block";
+  }
+
+  function moveHeart() {
+    let moved = false;
+
+    if (keys.ArrowLeft && heartPos.x > 0) {
+      heartPos.x -= speed;
+      moved = true;
+    }
+    if (keys.ArrowRight && heartPos.x < fightArea.clientWidth - heart.clientWidth) {
+      heartPos.x += speed;
+      moved = true;
+    }
+    if (keys.ArrowUp && heartPos.y > 0) {
+      heartPos.y -= speed;
+      moved = true;
+    }
+    if (keys.ArrowDown && heartPos.y < fightArea.clientHeight - heart.clientHeight) {
+      heartPos.y += speed;
+      moved = true;
+    }
+
+    if (dragging) {
+      moved = true;
+    }
+
+    if (moved) {
+      heart.style.left = heartPos.x + "px";
+      heart.style.top = heartPos.y + "px";
+    }
+    requestAnimationFrame(moveHeart);
+  }
+  requestAnimationFrame(moveHeart);
+
+  attackBtn.addEventListener('click', () => {
+    if (playerTurn) {
+      bossHits++;
+      bossDialogue.textContent = `Colpito! (${bossHits} / 5)`;
+      if (bossHits >= 5) {
+        bossDialogue.textContent = "Mi hai sconfitto....";
+        attackBtn.disabled = true;
+        nextBtn.style.display = "block";
+      } else {
+        bossDialogue.textContent = "Il Re ti attacca di nuovo! Schiva!";
+        playerTurn = false;
+        bossAttacking = true;
+        attackBtn.disabled = true;
+        startBossAttack();
+      }
+    }
+  });
+
+  retryBtn.addEventListener('click', () => {
+    playerLives = 5;
+    bossHits = 0;
+    updateLives();
+    retryBtn.style.display = "none";
+    attackBtn.disabled = true;
+    bossDialogue.textContent = "Il Re ti attacca! Schiva!";
+    playerTurn = false;
+    bossAttacking = true;
+    startBossAttack();
+  });
+
+  attackBtn.addEventListener('click', () => {
+  if (playerTurn) {
+    bossHits++;
+    bossDialogue.textContent = `Colpito! (${bossHits} / 5)`;
+    if (bossHits >= 5) {
+      bossDialogue.textContent = "Mi hai sconfitto...";
+      attackBtn.disabled = true;
+      nextBtn.style.display = "block";
+
+      nextBtn.onclick = () => {
+        window.location.href = 'bossstanco.html'; 
+      };
+
+    } else {
+      bossDialogue.textContent = "Il Re ti attacca di nuovo! Schiva!";
+      playerTurn = false;
+      bossAttacking = true;
+      attackBtn.disabled = true;
+      startBossAttack();
+    }
+  }
+});
+
+  analogContainer.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    moveStick(e);
+  });
+  analogContainer.addEventListener('pointermove', (e) => {
+    if (dragging) moveStick(e);
+  });
+  analogContainer.addEventListener('pointerup', (e) => {
+    dragging = false;
+    resetStick();
+  });
+  analogContainer.addEventListener('pointercancel', (e) => {
+    dragging = false;
+    resetStick();
+  });
+
+  function moveStick(e) {
+    const rect = analogContainer.getBoundingClientRect();
+    let x = e.clientX - rect.left;
+    let y = e.clientY - rect.top;
+
+    const dx = x - stickCenter.x;
+    const dy = y - stickCenter.y;
+    const distance = Math.min(Math.sqrt(dx*dx + dy*dy), 50);
+    const angle = Math.atan2(dy, dx);
+
+    x = stickCenter.x + distance * Math.cos(angle);
+    y = stickCenter.y + distance * Math.sin(angle);
+
+    stick.style.left = (x - stick.clientWidth/2) + "px";
+    stick.style.top = (y - stick.clientHeight/2) + "px";
+
+    const moveX = (x - stickCenter.x) * 0.2;
+    const moveY = (y - stickCenter.y) * 0.2;
+    heartPos.x = Math.min(Math.max(heartPos.x + moveX, 0), fightArea.clientWidth - heart.clientWidth);
+    heartPos.y = Math.min(Math.max(heartPos.y + moveY, 0), fightArea.clientHeight - heart.clientHeight);
+  }
+
+  function resetStick() {
+    stick.style.left = (stickCenter.x - stick.clientWidth/2) + "px";
+    stick.style.top = (stickCenter.y - stick.clientHeight/2) + "px";
+  }
+
+  heart.style.left = heartPos.x + "px";
+  heart.style.top = heartPos.y + "px";
+
+</script>
+
+</body>
+</html>

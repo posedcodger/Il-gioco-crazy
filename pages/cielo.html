@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fine</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Arial', sans-serif;
+      color: white;
+      text-align: center;
+      overflow: hidden;
+      background: black;
+    }
+
+    body {
+      background: url('../img/fine.png') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      opacity: 0;
+      animation: fadeIn 2s ease forwards;
+    }
+
+    .contenuto, .crediti {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .contenuto {
+      padding: 50px 20px 20px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      animation: showText 2s ease forwards;
+      animation-delay: 1.5s;
+    }
+
+    .crediti {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      font-size: 1em;
+      animation: showText 2s ease forwards;
+      animation-delay: 3.5s;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 0.5em;
+      text-shadow: 2px 2px 10px #000;
+    }
+
+    a {
+      color: #ffd700;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes showText {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="contenuto">
+    <h1>Grazie per aver giocato</h1>
+    <p>A questo gioco crazy...</p>
+  </div>
+
+  <div class="crediti">
+    <p>Seguimi su Instagram: <a href="https://instagram.com/riccardo_dorigo" target="_blank">@riccardo_dorigo</a></p>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>mappa</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background-color: #0b1a3d; /* blu scuro */
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    #map-background {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: url('../img/map_vuota.png') no-repeat center center/cover;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+      z-index: 0;
+    }
+
+    #content {
+      position: relative;
+      z-index: 1;
+    }
+
+    h1, h2 {
+      opacity: 0;
+      transition: opacity 0.7s ease;
+      margin: 0.3em 0;
+    }
+
+    h1.visible, h2.visible {
+      opacity: 1;
+    }
+
+    #sun-icon {
+      position: fixed;
+      bottom: 30px;
+      width: 60px;
+      height: 60px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      filter: drop-shadow(0 0 5px yellow);
+      z-index: 2;
+    }
+    #sun-icon:hover {
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="map-background"></div>
+
+  <div id="content">
+    <h1 id="title1">Si è fatta notte.</h1>
+    <h2 id="subtitle1">Non si vede un accidente, accendi una luce.</h2>
+    <h1 id="title2" style="display:none;">Oh era vuota.</h1>
+    <h2 id="subtitle2" style="display:none;">hai acceso la luce per niente. -_-</h2>
+  </div>
+
+  <img src="../img/torch.gif" alt="torcia" id="sun-icon" />
+
+  <script>
+    const title1 = document.getElementById('title1');
+    const subtitle1 = document.getElementById('subtitle1');
+    const title2 = document.getElementById('title2');
+    const subtitle2 = document.getElementById('subtitle2');
+    const sunIcon = document.getElementById('sun-icon');
+    const mapBackground = document.getElementById('map-background');
+    const content = document.getElementById('content');
+
+    
+    function showText() {
+      setTimeout(() => title1.classList.add('visible'), 500);
+      setTimeout(() => subtitle1.classList.add('visible'), 1500);
+    }
+
+    
+    showText();
+
+    
+    let lightOn = false;
+
+    sunIcon.addEventListener('click', (e) => {
+  e.stopPropagation();  
+
+  if (lightOn) return;
+
+  lightOn = true;
+
+  mapBackground.style.opacity = '1';
+  mapBackground.style.pointerEvents = 'auto';
+
+  title1.style.display = 'none';
+  subtitle1.style.display = 'none';
+
+  title2.style.display = 'block';
+  subtitle2.style.display = 'block';
+
+  setTimeout(() => {
+    title2.classList.add('visible');
+    subtitle2.classList.add('visible');
+  }, 100);
+
+  sunIcon.style.display = 'none';
+});
+
+    document.body.addEventListener('click', e => {
+      if (!lightOn) return;
+
+      setTimeout(() => {
+        window.location.href = 'cammina.html'; 
+      }, 300);
+    });
+  </script>
+
+</body>
+</html>

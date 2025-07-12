@@ -1,0 +1,505 @@
+<!DOCTYPE html> 
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bossfight2fase</title>
+<style>
+  body {
+    margin: 0;
+    background: black;
+    color: white;
+    font-family: 'Georgia', serif;
+    overflow: hidden;
+  }
+  #cutscene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to top, #000000, #1a1a1a);
+    animation: fadeIn 2s ease-out;
+    z-index: 10;
+  }
+  #boss-title {
+    font-size: 2rem;
+    opacity: 0;
+    animation: titleIn 3s forwards;
+  }
+  #boss-name {
+    font-size: 3rem;
+    font-weight: bold;
+    opacity: 0;
+    margin-top: 1rem;
+    animation: nameIn 5s forwards;
+  }
+  @keyframes titleIn { to { opacity: 1; } }
+  @keyframes nameIn {
+    0% { opacity: 0; letter-spacing: 1rem; filter: blur(8px); }
+    100% { opacity: 1; letter-spacing: 0; filter: blur(0); }
+  }
+  @keyframes fadeOut { to { opacity: 0; } }
+
+  #fight-container {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: #111;
+    color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  #boss-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  #boss-img {
+    width: 120px;
+    height: 120px;
+    background: url('../img/king.png') center/contain no-repeat;
+    flex-shrink: 0;
+    border: 2px solid white;
+    border-radius: 8px;
+  }
+  #boss-dialogue {
+    background: rgba(0,0,0,0.7);
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 1.3rem;
+    min-height: 80px;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  #fight-area {
+    position: relative;
+    margin: 0 auto;
+    width: 500px;
+    height: 250px;
+    border: 4px solid white;
+    background: black;
+    overflow: hidden;
+  }
+
+  #heart {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: red;
+    left: 240px;
+    top: 115px;
+    clip-path: polygon(50% 0%, 100% 35%, 80% 100%, 50% 75%, 20% 100%, 0% 35%);
+    transition: top 0.05s linear, left 0.05s linear;
+    z-index: 10;
+  }
+
+  .attack-object {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: yellow;
+    border-radius: 50%;
+    top: -20px;
+  }
+
+  #player-lives {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    background: rgba(0,0,0,0.7);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+  }
+
+  #attack-btn {
+    display: block;
+    margin: 20px auto 0 auto;
+    padding: 12px 25px;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    border: none;
+    background: #c33;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  #attack-btn:disabled {
+    background: #660000;
+    cursor: not-allowed;
+  }
+
+  #restart-btn {
+    display: none;
+    margin: 10px auto;
+    padding: 12px 25px;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    border: none;
+    background: #3399cc;
+    color: white;
+    cursor: pointer;
+  }
+
+  #next-btn {
+    display: none;
+    margin: 10px auto;
+    padding: 12px 25px;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    border: none;
+    background: #33cc66;
+    color: white;
+    cursor: pointer;
+  }
+
+  #analog-container {
+    display: none;
+    position: fixed;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 120px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    touch-action: none;
+    z-index: 50;
+  }
+  #stick {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 50%;
+    left: 30px;
+    top: 30px;
+    touch-action: none;
+  }
+
+  @media (max-width: 700px) {
+    #analog-container {
+      display: block;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="cutscene">
+  <div id="boss-title">✦ ops è ancora vivo... ✦</div>
+  <div id="boss-name">IL RE DEL CASTELLO DI MERDA È VIVO E VEGETO</div>
+</div>
+
+<div id="fight-container">
+  <div id="boss-area">
+    <div id="boss-img"></div>
+    <div id="boss-dialogue"></div>
+  </div>
+
+  <div id="fight-area">
+    <div id="heart"></div>
+  </div>
+
+  <button id="attack-btn" disabled>Attacca</button>
+  <button id="restart-btn">Ricomincia</button>
+  <button id="next-btn">Avanti</button>
+
+  <div id="player-lives">Vite: 5</div>
+
+  <div id="analog-container">
+    <div id="stick"></div>
+  </div>
+</div>
+
+<audio id="boss-audio" src="../img/bossfight.mp3" preload="auto" loop></audio>
+
+<script>
+  const cutscene = document.getElementById('cutscene');
+  const fightContainer = document.getElementById('fight-container');
+  const bossDialogue = document.getElementById('boss-dialogue');
+  const attackBtn = document.getElementById('attack-btn');
+  const restartBtn = document.getElementById('restart-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const heart = document.getElementById('heart');
+  const playerLivesDisplay = document.getElementById('player-lives');
+  const fightArea = document.getElementById('fight-area');
+  const bossAudio = document.getElementById('boss-audio');
+  const analogContainer = document.getElementById('analog-container');
+  const stick = document.getElementById('stick');
+
+  const bossLines = [
+    "Credevi e bastardo",
+    "....anche se sono stanco.....",
+    "...ti ammazzerò lostesso."
+  ];
+
+  let dialogueIndex = 0;
+
+  let bossHits = 0;
+  let playerLives = 5;
+
+  let bossTurn = true;
+  let playerTurn = false;
+
+  let heartPos = { x: 240, y: 115 };
+  const speed = 5;
+
+  let attackObjects = [];
+  const attackSpeed = 3;
+  const attacksPerTurn = 7; 
+  let attacksDone = 0;
+
+  let stickCenter = {x: 60, y: 60};
+  let dragging = false;
+
+  const keys = {};
+  window.addEventListener('keydown', e => keys[e.key] = true);
+  window.addEventListener('keyup', e => keys[e.key] = false);
+
+ let audioStarted = false;
+
+function startAudio() {
+  if (!audioStarted) {
+    bossAudio.play().then(() => {
+      audioStarted = true;
+    }).catch(() => {
+      console.log("Autoplay bloccato, attendi interazione utente.");
+    });
+  }
+}
+
+window.onload = () => {
+  setTimeout(() => {
+    cutscene.style.animation = 'fadeOut 2s forwards';
+    setTimeout(() => {
+      cutscene.style.display = 'none';
+      fightContainer.style.display = 'block';
+
+      startAudio(); 
+
+      startBossDialogue();
+    }, 2000);
+  }, 7000);
+};
+
+document.body.addEventListener('click', () => {
+  if (!audioStarted) {
+    startAudio();
+  }
+});
+
+  function startBossDialogue() {
+    if (dialogueIndex >= bossLines.length) {
+      startBossTurn();
+      return;
+    }
+    bossDialogue.textContent = bossLines[dialogueIndex];
+    dialogueIndex++;
+    setTimeout(() => {
+      bossDialogue.textContent = '';
+      setTimeout(startBossDialogue, 800);
+    }, 2500);
+  }
+
+  function startBossTurn() {
+    bossTurn = true;
+    playerTurn = false;
+    attacksDone = 0;
+    attackBtn.disabled = true;
+    bossDialogue.textContent = "Il boss sta attaccando... Schiva!";
+    bossAttackLoop();
+  }
+
+  function bossAttackLoop() {
+    if (playerLives <= 0 || bossHits >= 5) return;
+
+    if (attacksDone >= attacksPerTurn) {
+      bossTurn = false;
+      playerTurn = true;
+      bossDialogue.textContent = "Ora tocca a te! Attacca!";
+      attackBtn.disabled = false;
+      return;
+    }
+
+    const attackObj = document.createElement('div');
+    attackObj.classList.add('attack-object');
+    attackObj.style.left = Math.random() * 480 + 'px';
+    attackObj.style.top = '-20px';
+    fightArea.appendChild(attackObj);
+    attackObjects.push(attackObj);
+    attacksDone++;
+
+    function animateObject() {
+      if (playerLives <= 0 || bossHits >= 5) return;
+
+      let top = parseFloat(attackObj.style.top);
+      top += attackSpeed;
+      attackObj.style.top = top + 'px';
+
+      const objRect = attackObj.getBoundingClientRect();
+      const heartRect = heart.getBoundingClientRect();
+
+      if (!(objRect.right < heartRect.left ||
+            objRect.left > heartRect.right ||
+            objRect.bottom < heartRect.top ||
+            objRect.top > heartRect.bottom)) {
+        playerLives--;
+        updateLives();
+        attackObj.remove();
+        attackObjects = attackObjects.filter(o => o !== attackObj);
+
+        if (playerLives <= 0) {
+          endGame(false);
+          return;
+        }
+      }
+
+      if (top > 250) {
+        attackObj.remove();
+        attackObjects = attackObjects.filter(o => o !== attackObj);
+      }
+
+      if (top <= 250 && playerLives > 0) {
+        requestAnimationFrame(animateObject);
+      } else {
+        setTimeout(bossAttackLoop, 400);
+      }
+    }
+    animateObject();
+  }
+
+  function updateLives() {
+    playerLivesDisplay.textContent = "Vite: " + playerLives;
+  }
+
+  function updateScore() {
+    bossDialogue.textContent = `Colpi al boss: ${bossHits} / 5`;
+  }
+
+  function endGame(win) {
+    attackBtn.disabled = true;
+    bossTurn = false;
+    playerTurn = false;
+
+    if (win) {
+      bossDialogue.textContent = "Sta volta è morto davvero! Vittoria!";
+      restartBtn.style.display = 'none';
+      nextBtn.style.display = 'block';
+    } else {
+      bossDialogue.textContent = "Sei morto! Riprova!";
+      restartBtn.style.display = 'block';
+      nextBtn.style.display = 'none';
+    }
+  }
+
+  attackBtn.addEventListener('click', () => {
+    if (!playerTurn) return;
+
+    bossHits++;
+    updateScore();
+    attackBtn.disabled = true;
+    playerTurn = false;
+    bossTurn = true;
+
+    if (bossHits >= 5) {
+      endGame(true);
+    } else {
+      bossDialogue.textContent = "Il boss risponde!";
+      setTimeout(() => {
+        startBossTurn();
+      }, 1500);
+    }
+  });
+
+  restartBtn.addEventListener('click', () => {
+    location.reload();
+  });
+
+  nextBtn.addEventListener('click', () => {
+    window.location.href = 'pace.html'; // Cambia con url reale
+  });
+
+  function moveHeart() {
+    if (!dragging) {
+      if (keys['w'] || keys['ArrowUp']) heartPos.y -= speed;
+      if (keys['s'] || keys['ArrowDown']) heartPos.y += speed;
+      if (keys['a'] || keys['ArrowLeft']) heartPos.x -= speed;
+      if (keys['d'] || keys['ArrowRight']) heartPos.x += speed;
+    }
+
+    if (heartPos.x < 0) heartPos.x = 0;
+    if (heartPos.y < 0) heartPos.y = 0;
+    if (heartPos.x > 480) heartPos.x = 480;
+    if (heartPos.y > 230) heartPos.y = 230;
+
+    updateHeartPos();
+
+    requestAnimationFrame(moveHeart);
+  }
+  requestAnimationFrame(moveHeart);
+
+  function updateHeartPos() {
+    heart.style.left = heartPos.x + 'px';
+    heart.style.top = heartPos.y + 'px';
+  }
+
+  analogContainer.addEventListener('pointerdown', e => {
+    dragging = true;
+    moveStick(e);
+  });
+  analogContainer.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    moveStick(e);
+  });
+  analogContainer.addEventListener('pointerup', e => {
+    dragging = false;
+    resetStick();
+  });
+  analogContainer.addEventListener('pointercancel', e => {
+    dragging = false;
+    resetStick();
+  });
+
+  function moveStick(e) {
+    const rect = analogContainer.getBoundingClientRect();
+    let x = e.clientX - rect.left;
+    let y = e.clientY - rect.top;
+
+    const dx = x - stickCenter.x;
+    const dy = y - stickCenter.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const maxDist = 40;
+    let newX = dx, newY = dy;
+    if (dist > maxDist) {
+      newX = dx * maxDist / dist;
+      newY = dy * maxDist / dist;
+    }
+
+    stick.style.left = (stickCenter.x + newX - 30) + 'px';
+    stick.style.top = (stickCenter.y + newY - 30) + 'px';
+
+    heartPos.x += newX / 4;
+    heartPos.y += newY / 4;
+
+    if (heartPos.x < 0) heartPos.x = 0;
+    if (heartPos.y < 0) heartPos.y = 0;
+    if (heartPos.x > 480) heartPos.x = 480;
+    if (heartPos.y > 230) heartPos.y = 230;
+  }
+
+  function resetStick() {
+    stick.style.left = (stickCenter.x - 30) + 'px';
+    stick.style.top = (stickCenter.y - 30) + 'px';
+  }
+</script>
+
+</body>
+</html>

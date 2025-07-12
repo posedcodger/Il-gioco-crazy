@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>cammina</title>
+  <style>
+    body, html {
+      margin: 0; padding: 0; height: 100%;
+      background-color: #0b1a3d;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 1rem;
+      position: relative;
+    }
+
+    h1, h2 {
+      opacity: 0;
+      transition: opacity 1s ease;
+      margin: 0.5em 0;
+      max-width: 600px;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 40%;
+    }
+
+    h1.visible, h2.visible {
+      opacity: 1;
+    }
+
+    button {
+      margin-top: 200px;
+      padding: 0.8em 2em;
+      font-size: 1.2rem;
+      cursor: pointer;
+      background: #325e9c;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      opacity: 0;
+      transition: opacity 1s ease;
+      position: relative;
+      top: auto;
+      left: auto;
+      transform: none;
+    }
+
+    button.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 id="line1">Decidi di incamminarti.</h1>
+  <h2 id="line2">E' buio e trovi un bosco.</h2>
+  <h2 id="line3">Non hai scelta, decidi di entrare.</h2>
+  <h2 id="line4">Continui a camminare....finchè.....</h2>
+
+  <button id="prosegui-btn">Finchè cosa?</button>
+
+  <h1 id="finche1" style="opacity:0; position: relative; top: auto; left:auto; transform:none;">Finchè...</h1>
+  <button id="finche-btn1" style="opacity:0;">Finchè??</button>
+
+  <h1 id="finche2" style="opacity:0; position: relative; top: auto; left:auto; transform:none;">Finchè...</h1>
+  <button id="finche-btn2" style="opacity:0;">Finchè??</button>
+
+  <script>
+    const lines = [
+      document.getElementById('line1'),
+      document.getElementById('line2'),
+      document.getElementById('line3'),
+      document.getElementById('line4'),
+    ];
+
+    const proseguiBtn = document.getElementById('prosegui-btn');
+    const finche1 = document.getElementById('finche1');
+    const fincheBtn1 = document.getElementById('finche-btn1');
+    const finche2 = document.getElementById('finche2');
+    const fincheBtn2 = document.getElementById('finche-btn2');
+
+    let current = 0;
+
+    function showNextLine() {
+      if (current > 0) {
+        lines[current - 1].classList.remove('visible');
+      }
+      if (current < lines.length) {
+        lines[current].classList.add('visible');
+        current++;
+        setTimeout(showNextLine, 3500);
+      } else {
+        proseguiBtn.classList.add('visible');
+      }
+    }
+
+    showNextLine();
+
+    proseguiBtn.addEventListener('click', () => {
+      proseguiBtn.classList.remove('visible');
+      finche1.style.opacity = '1';
+      fincheBtn1.style.opacity = '1';
+    });
+
+    fincheBtn1.addEventListener('click', () => {
+      finche1.style.opacity = '0';
+      fincheBtn1.style.opacity = '0';
+      setTimeout(() => {
+        finche2.style.opacity = '1';
+        fincheBtn2.style.opacity = '1';
+      }, 1000);
+    });
+
+    fincheBtn2.addEventListener('click', () => {
+      window.location.href = 'uscita.html'; 
+    });
+  </script>
+</body>
+</html>

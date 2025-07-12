@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Castello</title>
+  <style>
+    html, body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+      height: 100%;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      touch-action: none;
+    }
+
+    #gameCanvas {
+      background: black;
+      display: block;
+      transition: opacity 0.4s ease;
+      opacity: 1;
+    }
+
+    #startScreen {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: url('../img/fontana.png') no-repeat center center;
+      background-size: cover;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    button {
+      font-size: 1.5em;
+      padding: 0.5em 1em;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    #touchControls {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 30px;
+      z-index: 1000;
+    }
+
+    .touchButton {
+      width: 70px;
+      height: 70px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      font-size: 2em;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .touchButton:active {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+<div id="startScreen">
+  <h1>Benvenuto nel Castello</h1>
+  <button id="startButton">Andiamo</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+<audio id="bgMusic" src="../img/coro.mp3" loop></audio>
+
+<div id="touchControls" style="display:none;">
+  <div class="touchButton" id="leftBtn">&#8592;</div>
+  <div class="touchButton" id="rightBtn">&#8594;</div>
+</div>
+
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  const startButton = document.getElementById('startButton');
+  const bgMusic = document.getElementById('bgMusic');
+
+  let keys = {};
+  let currentScene = 1;
+  const maxScenes = 5; 
+  let images = {};
+
+  const layers = ['background', 'plan3', 'plan2']; 
+
+  const player = {
+    x: 100,
+    y: 0,
+    speed: 200,
+    sprite: new Image(),
+    frameWidth: 125,
+    frameHeight: 100,
+    scale: 5,
+    direction: 1
+  };
+  player.sprite.src = "../img/assets/player.png";
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    player.y = canvas.height - player.frameHeight * player.scale - 40;
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  function loadScene(sceneNumber) {
+    images = {};
+    let loadedCount = 0;
+    const totalToLoad = layers.length + 1;
+
+    function checkAllLoaded() {
+      loadedCount++;
+    }
+
+    layers.forEach(layer => {
+      const img = new Image();
+      img.src = `../img/assets/scene${sceneNumber}/${layer}.png`;
+      img.onload = checkAllLoaded;
+      images[layer] = img;
+    });
+
+    const plan1Img = new Image();
+    plan1Img.src = `../img/assets/scene${sceneNumber}/plan1.png`;
+    plan1Img.onload = checkAllLoaded;
+    images['plan1'] = plan1Img;
+  }
+
+  function drawScene() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    layers.forEach(layer => {
+      if (images[layer]?.complete) {
+        ctx.drawImage(images[layer], 0, 0, canvas.width, canvas.height);
+      }
+    });
+
+    const dw = player.frameWidth * player.scale;
+    const dh = player.frameHeight * player.scale;
+
+    ctx.save();
+    if (player.direction === -1) {
+      ctx.scale(-1, 1);
+      ctx.drawImage(
+        player.sprite, 0, 0, player.frameWidth, player.frameHeight,
+        -player.x - dw, player.y, dw, dh
+      );
+    } else {
+      ctx.drawImage(
+        player.sprite, 0, 0, player.frameWidth, player.frameHeight,
+        player.x, player.y, dw, dh
+      );
+    }
+    ctx.restore();
+
+    if (images['plan1']?.complete) {
+      ctx.drawImage(images['plan1'], 0, 0, canvas.width, canvas.height);
+    }
+  }
+
+  function update(dt) {
+    const maxX = canvas.width - player.frameWidth * player.scale;
+    let moved = false;
+
+    if (keys['ArrowRight'] || keys['RightTouch']) {
+      player.x += player.speed * dt;
+      player.direction = 1;
+      moved = true;
+
+      if (player.x > maxX) {
+        if (currentScene < maxScenes) {
+          changeScene(1);
+          player.x = 0;
+        } else if (currentScene === maxScenes) {
+          window.location.href = "cielo.html";
+        }
+      }
+    }
+
+    if (keys['ArrowLeft'] || keys['LeftTouch']) {
+      player.x -= player.speed * dt;
+      player.direction = -1;
+      moved = true;
+
+      if (player.x < 0) {
+        if (currentScene > 1) {
+          changeScene(-1);
+          player.x = maxX;
+        } else {
+          player.x = 0;
+        }
+      }
+    }
+
+    return moved;
+  }
+
+  function changeScene(dir) {
+    canvas.style.opacity = 0;
+    setTimeout(() => {
+      currentScene += dir;
+      if (currentScene > maxScenes) currentScene = maxScenes;
+      if (currentScene < 1) currentScene = 1;
+
+      loadScene(currentScene);
+      canvas.style.opacity = 1;
+    }, 400);
+  }
+
+  let lastTime = 0;
+  function loop(timestamp) {
+    if (!lastTime) lastTime = timestamp;
+    const deltaTime = (timestamp - lastTime) / 1000;
+    lastTime = timestamp;
+
+    update(deltaTime);
+    drawScene();
+    requestAnimationFrame(loop);
+  }
+
+  startButton.onclick = () => {
+    document.getElementById('startScreen').style.display = 'none';
+    canvas.style.display = 'block';
+    resizeCanvas();
+    loadScene(currentScene);
+
+    let checkInterval = setInterval(() => {
+      let allLoaded = Object.values(images).every(img => img.complete);
+      if (allLoaded) {
+        clearInterval(checkInterval);
+        bgMusic.play();
+        requestAnimationFrame(loop);
+        if ('ontouchstart' in window) {
+          document.getElementById('touchControls').style.display = 'flex';
+        }
+      }
+    }, 100);
+  };
+
+  window.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      keys[e.key] = true;
+    }
+  });
+
+  window.addEventListener('keyup', e => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      keys[e.key] = false;
+    }
+  });
+
+  const leftBtn = document.getElementById('leftBtn');
+  const rightBtn = document.getElementById('rightBtn');
+
+  leftBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['LeftTouch'] = true; });
+  leftBtn.addEventListener('touchend', e => { e.preventDefault(); keys['LeftTouch'] = false; });
+  leftBtn.addEventListener('touchcancel', e => { e.preventDefault(); keys['LeftTouch'] = false; });
+
+  rightBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['RightTouch'] = true; });
+  rightBtn.addEventListener('touchend', e => { e.preventDefault(); keys['RightTouch'] = false; });
+  rightBtn.addEventListener('touchcancel', e => { e.preventDefault(); keys['RightTouch'] = false; });
+
+</script>
+
+</body>
+</html>

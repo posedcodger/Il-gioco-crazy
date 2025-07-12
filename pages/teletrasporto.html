@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bar</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url('../img/bar.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    #intro, #bar-scene, #game-section, #final-message {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    #intro {
+      background: black url('../img/teleport.gif') no-repeat center center;
+      background-size: cover;
+      animation: fadeInOut 6s forwards;
+      display: flex;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    img.barista {
+      width: 200px;
+      margin-bottom: 20px;
+    }
+
+    .bubble {
+      background: rgba(0,0,0,0.6);
+      padding: 12px 24px;
+      border-radius: 10px;
+      margin: 10px auto;
+      display: inline-block;
+      max-width: 80%;
+      font-size: 1.4rem;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #333;
+      color: white;
+      transition: background 0.3s;
+      display: none;
+    }
+
+    button:hover {
+      background-color: #555;
+    }
+
+    #dice-area {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin: 20px;
+    }
+
+    .dice-box {
+      font-size: 4rem;
+    }
+  </style>
+</head>
+<body>
+  <audio id="bg-music" loop>
+    <source src="../img/bar.mp3" type="audio/mpeg" />
+    Il tuo browser non supporta l'audio HTML5.
+  </audio>
+
+  <div id="intro"></div>
+
+  <div id="bar-scene">
+    <img src="../img/barista.png" alt="barista" class="barista" />
+    <h1>Oh era un teletrasporto....</h1>
+    <h2>c'è qualcuno.</h2>
+    <div id="dialogues"></div>
+    <button id="start-btn">Iniziamo</button>
+  </div>
+
+  <div id="game-section">
+    <img src="../img/barista.png" alt="barista" class="barista" />
+    <h2>Chi fa il numero più alto vince il punto! Il primo che arriva a 3 vince.</h2>
+    <div id="dice-area">
+      <div>
+        <div>Tu:</div>
+        <div class="dice-box" id="player-dice">🎲</div>
+      </div>
+      <div>
+        <div>Barista:</div>
+        <div class="dice-box" id="barista-dice">🎲</div>
+      </div>
+    </div>
+    <button id="roll-btn">Lancia i dadi</button>
+    <div id="score" class="bubble"></div>
+    <div id="round-message" class="bubble"></div>
+  </div>
+
+  <div id="final-message">
+    <img src="../img/barista.png" alt="barista" class="barista" />
+    <div class="bubble">Complimenti mi hai battuto, ecco a te una birra e le chiavi della porta sul retro.</div>
+    <button id="next-btn" style="display:none;" onclick="location.href='prossima-pagina.html'">Continua</button>
+    <button id="exit-btn">Esci</button>
+  </div>
+
+  <script>
+    const intro = document.getElementById('intro');
+    const barScene = document.getElementById('bar-scene');
+    const gameSection = document.getElementById('game-section');
+    const dialogues = document.getElementById('dialogues');
+    const startBtn = document.getElementById('start-btn');
+    const finalMessage = document.getElementById('final-message');
+    const bgMusic = document.getElementById('bg-music');
+
+    const playerDice = document.getElementById('player-dice');
+    const baristaDice = document.getElementById('barista-dice');
+    const rollBtn = document.getElementById('roll-btn');
+    const scoreDiv = document.getElementById('score');
+    const roundMessage = document.getElementById('round-message');
+    const exitBtn = document.getElementById('exit-btn');
+
+    const dialogueLines = [
+      "benvenuto nel mio bar.",
+      "se superi mi batti ti faccio passare e ti offro anche una birra."
+    ];
+
+    setTimeout(() => {
+      intro.style.display = 'none';
+      barScene.style.display = 'flex';
+      showDialogues(0);
+    }, 6000);
+
+    function showDialogues(index) {
+      if (index >= dialogueLines.length) {
+        startBtn.style.display = 'inline-block';
+        return;
+      }
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      dialogues.appendChild(bubble);
+      let i = 0;
+      const interval = setInterval(() => {
+        bubble.textContent += dialogueLines[index][i];
+        i++;
+        if (i >= dialogueLines[index].length) {
+          clearInterval(interval);
+          setTimeout(() => showDialogues(index + 1), 1000);
+        }
+      }, 50);
+    }
+
+    let playerScore = 0;
+    let baristaScore = 0;
+
+    startBtn.addEventListener('click', () => {
+      bgMusic.play().catch(() => {});
+      barScene.style.display = 'none';
+      gameSection.style.display = 'flex';
+      rollBtn.style.display = 'inline-block';
+      updateScore();
+    });
+
+    rollBtn.addEventListener('click', () => {
+      const playerRoll = Math.floor(Math.random() * 6) + 1;
+      const baristaRoll = Math.floor(Math.random() * 6) + 1;
+
+      playerDice.textContent = `🎲${playerRoll}`;
+      baristaDice.textContent = `🎲${baristaRoll}`;
+
+      if (playerRoll > baristaRoll) {
+        playerScore++;
+        roundMessage.textContent = 'Tutta fortuna...';
+      } else if (baristaRoll > playerRoll) {
+        baristaScore++;
+        roundMessage.textContent = 'Ho vinto, riproviamo!';
+      } else {
+        roundMessage.textContent = 'Pareggio, ritenta!';
+      }
+
+      updateScore();
+
+      if (playerScore === 3) {
+        gameSection.style.display = 'none';
+        finalMessage.style.display = 'flex';
+        exitBtn.style.display = 'inline-block'; 
+      } else if (baristaScore === 3) {
+        playerScore = 0;
+        baristaScore = 0;
+        roundMessage.textContent = 'Ho vinto, riproviamo!';
+      }
+    });
+
+    function updateScore() {
+      scoreDiv.textContent = `Punteggio - Tu: ${playerScore} | Barista: ${baristaScore}`;
+    }
+
+    exitBtn.addEventListener('click', () => {
+      window.location.href = 'paesaggio.html';
+    });
+  </script>
+</body>
+</html>

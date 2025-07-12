@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Caverna</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url('../img/grotta.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    #game-over {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: black;
+      color: red;
+      font-size: 4rem;
+      font-weight: bold;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      animation: fadeIn 1s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 2rem;
+      text-shadow: 2px 2px 5px black;
+    }
+
+    #robot {
+      width: 200px;
+      margin: 20px auto;
+    }
+
+    .bubble {
+      background: rgba(0,0,0,0.6);
+      padding: 10px 20px;
+      border-radius: 10px;
+      margin: 10px auto;
+      display: inline-block;
+      max-width: 80%;
+      font-size: 1.2rem;
+      animation: typing 0.4s steps(20, end) forwards;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    #buttons {
+      display: none;
+      margin-top: 30px;
+    }
+
+    .color-btn {
+      width: 80px;
+      height: 80px;
+      margin: 10px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+    }
+
+    #sequenceBox {
+      width: 100px;
+      height: 100px;
+      margin: 20px auto;
+      border: 4px solid white;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="robot-title">Cosa ci fa un robot in una caverna?</h1>
+  <img src="../img/robot.gif" alt="robot" id="robot" />
+
+  <div id="dialogues"></div>
+
+  <div id="sequenceBox"></div>
+
+  <div id="buttons">
+    <button class="color-btn" id="red" style="background:red"></button>
+    <button class="color-btn" id="green" style="background:green"></button>
+    <button class="color-btn" id="blue" style="background:blue"></button>
+  </div>
+
+  <div id="game-over">SEI MORTO</div>
+
+  <audio id="music" src="../img/musicarobot.mp3" loop></audio>
+  <audio id="fail" src="../img/morte.mp3"></audio>
+
+  <script>
+    const music = document.getElementById('music');
+    const fail = document.getElementById('fail');
+    const dialogues = document.getElementById('dialogues');
+    const robotTitle = document.getElementById('robot-title');
+    const gameOver = document.getElementById('game-over');
+    const sequenceBox = document.getElementById('sequenceBox');
+    const buttons = document.getElementById('buttons');
+
+    const colors = ['red', 'green', 'blue'];
+    let sequence = [];
+    let playerIndex = 0;
+    let gameStarted = false;
+
+    const dialoguesText = [
+      '1111-6666-3333',
+      '9999-4444-2222',
+      'Per passare devi affrontarmi',
+      'Vediamo se hai una buona memoria'
+    ];
+
+    function showDialogue(index = 0) {
+      if (index >= dialoguesText.length) {
+        startGame();
+        return;
+      }
+      const bubble = document.createElement('div');
+      bubble.classList.add('bubble');
+      dialogues.appendChild(bubble);
+      let i = 0;
+      const interval = setInterval(() => {
+        bubble.textContent += dialoguesText[index][i];
+        i++;
+        if (i >= dialoguesText[index].length) {
+          clearInterval(interval);
+          setTimeout(() => showDialogue(index + 1), 1000);
+        }
+      }, 50);
+    }
+
+    function startGame() {
+      dialogues.innerHTML = '';
+      robotTitle.textContent = '';
+      buttons.style.display = 'block';
+      sequence = [];
+      playerIndex = 0;
+      gameStarted = true;
+      nextRound();
+    }
+
+    function nextRound() {
+      const nextColor = colors[Math.floor(Math.random() * colors.length)];
+      sequence.push(nextColor);
+      showSequence();
+    }
+
+    function showSequence() {
+      let i = 0;
+      const interval = setInterval(() => {
+        sequenceBox.style.backgroundColor = sequence[i];
+        setTimeout(() => {
+          sequenceBox.style.backgroundColor = 'transparent';
+        }, 500);
+        i++;
+        if (i >= sequence.length) {
+          clearInterval(interval);
+        }
+      }, 1000);
+    }
+
+    function handleClick(color) {
+      if (!gameStarted) return;
+      if (color === sequence[playerIndex]) {
+        playerIndex++;
+        if (playerIndex >= sequence.length) {
+          if (sequence.length >= 7) {
+        document.getElementById('robot').style.display = 'none';
+        buttons.style.display = 'none';
+        robotTitle.textContent = 'Beh sembra tu abbia una memoria discreta...proseguiamo.';
+        setTimeout(() => {
+        window.location.href = 'laboratorio.html';
+    }, 3000);
+    } else {
+            playerIndex = 0;
+            setTimeout(nextRound, 1000);
+          }
+        }
+      } else {
+        fail.play();
+        gameOver.style.display = 'flex';
+        setTimeout(() => {
+          window.location.href = 'albero.html';
+        }, 3000);
+      }
+    }
+
+    document.getElementById('red').addEventListener('click', () => handleClick('red'));
+    document.getElementById('green').addEventListener('click', () => handleClick('green'));
+    document.getElementById('blue').addEventListener('click', () => handleClick('blue'));
+
+    document.body.addEventListener('click', function initAudio() {
+      music.play().catch(() => {});
+      showDialogue();
+      document.body.removeEventListener('click', initAudio);
+    });
+  </script>
+</body>
+</html>
