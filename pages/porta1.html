@@ -147,6 +147,71 @@
       window.location.href = 'mappa.html';
     }, 500);
   });
+  // Supporto mobile per trascinamento
+let isDragging = false;
+
+stick.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  const touch = e.touches[0];
+  stick.style.position = 'absolute';
+  moveStick(touch.clientX, touch.clientY);
+});
+
+stick.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  const touch = e.touches[0];
+  moveStick(touch.clientX, touch.clientY);
+
+  // Se il bastone tocca il cane
+  if (isOverlapping(stick, dog)) {
+    dropStickOnDog();
+  }
+});
+
+stick.addEventListener('touchend', () => {
+  isDragging = false;
+});
+
+function moveStick(x, y) {
+  stick.style.left = `${x - stick.offsetWidth / 2}px`;
+  stick.style.top = `${y - stick.offsetHeight / 2}px`;
+}
+
+function isOverlapping(el1, el2) {
+  const rect1 = el1.getBoundingClientRect();
+  const rect2 = el2.getBoundingClientRect();
+  return !(
+    rect1.right < rect2.left ||
+    rect1.left > rect2.right ||
+    rect1.bottom < rect2.top ||
+    rect1.top > rect2.bottom
+  );
+}
+
+function dropStickOnDog() {
+  if (!dog || dog.style.display === 'none') return;
+
+  dog.style.opacity = '0';
+  stick.style.opacity = '0';
+  line1.style.opacity = '0';
+  line2.style.opacity = '0';
+
+  setTimeout(() => {
+    dog.style.display = 'none';
+    stick.style.display = 'none';
+
+    line1.style.display = 'none';
+    line2.style.display = 'none';
+
+    map.style.display = 'block';
+    line3.style.opacity = '1';
+
+    setTimeout(() => {
+      map.style.opacity = '1';
+    }, 50);
+  }, 500);
+}
+
 </script>
 
 </body>
