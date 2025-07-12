@@ -72,6 +72,19 @@
     .touchButton:active {
       background: rgba(255, 255, 255, 0.5);
     }
+    @media (max-width: 700px) {
+  .touchButton {
+    width: 100px;
+    height: 100px;
+    font-size: 3em;
+  }
+
+  #touchControls {
+    gap: 40px;
+    bottom: 30px;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -117,9 +130,26 @@
   player.sprite.src = "../img/assets/player.png";
 
   function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    player.y = canvas.height - player.frameHeight * player.scale - 40;
+    const aspectRatio = 16 / 9;
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+
+  if (width / height > aspectRatio) {
+    // troppo largo: limita larghezza
+    width = height * aspectRatio;
+  } else {
+    // troppo alto: limita altezza
+    height = width / aspectRatio;
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+
+  canvas.style.position = 'absolute';
+  canvas.style.left = `${(window.innerWidth - width) / 2}px`;
+  canvas.style.top = `${(window.innerHeight - height) / 2}px`;
+
+  player.y = canvas.height - player.frameHeight * player.scale - 40;
   }
   window.addEventListener('resize', resizeCanvas);
 
